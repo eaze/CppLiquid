@@ -4,6 +4,7 @@
 #include "template.hpp"
 #include "error.hpp"
 #include <ctime>
+#include <time.h>
 
 namespace Liquid { namespace StandardFilters {
 
@@ -716,6 +717,12 @@ Data sort_natural(const Data& input, const std::vector<Data>& args)
 
 bool string_to_date(const std::string& input, struct ::tm& tm)
 {
+    if (input == "now" || input == "today") {
+        std::time_t now = std::time(nullptr);
+        ::tm* result = ::gmtime_r(&now, &tm);
+        return result != nullptr;
+    }
+
     const char *cstr = input.c_str();
     int year = 0;
     int month = 0;
@@ -752,11 +759,17 @@ Data date(const Data& input, const std::vector<Data>& args)
         throw syntax_error(String("date takes 1 argument, but was passed %1.").arg(args.size()));
     }
     const Data& arg = args.at(0);
-    if (!arg.isString() || arg.size() == 0) {
+    if (!arg.isString()) {
         return input;
     }
     struct ::tm tm;
-    if (!string_to_date(input.toString().toStdString().c_str(), tm)) {
+    if (input.isNumber()) {
+        std::time_t t = input.toInt();
+        ::tm* result = ::gmtime_r(&t, &tm);
+        if (result == nullptr) {
+            return nullptr;
+        }
+    } else if (!string_to_date(input.toString().toStdString().c_str(), tm)) {
         return nullptr;
     }
     const auto formatBytes = arg.toString().toStdString();
@@ -831,7 +844,7 @@ void registerFilters(Template& tmpl)
 #include "tests.hpp"
 
 TEST_CASE("Liquid::StandardFilters") {
-    
+
     SECTION("AppendToString") {
         Liquid::Template t;
         t.parse("{{ \"hello \" | append: \"world\" }}");
@@ -927,7 +940,7 @@ TEST_CASE("Liquid::StandardFilters") {
         CHECK(t.parse("{{ 'hello @world' | url_encode }}").render().toStdString() == "hello%20%40world");
         CHECK(t.parse("{{ 'foo+1@example.com' | url_encode }}").render().toStdString() == "foo%2B1%40example.com");
     }
-    
+
     SECTION("UrlDecode") {
         Liquid::Template t;
         CHECK(t.parse("{{ 'hello%20%40world' | url_decode }}").render().toStdString() == "hello @world");
@@ -1250,7 +1263,7 @@ TEST_CASE("Liquid::StandardFilters") {
         data = Liquid::Data(hash);
         CHECK(t.parse("{{ names | sort_natural: 'name' | map: 'name' | join: ', ' }}").render(data).toStdString() == "bob, george, Jane, Sally");
     }
-    
+
     // https://github.com/Shopify/liquid/pull/805
     SECTION("SortMissingProperty") {
         const Liquid::Data::Array input{
@@ -1274,7 +1287,7 @@ TEST_CASE("Liquid::StandardFilters") {
         };
         CHECK(result == Liquid::Data{expectation});
     }
-    
+
     SECTION("SortMissingProperty2") {
         const Liquid::Data::Array input{
             Liquid::Data::Hash{ { "handle", "gamma" } },

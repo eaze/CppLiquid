@@ -2,6 +2,7 @@
 #define LIQUID_DATA_HPP
 
 #include <memory>
+#include <string>
 #include <vector>
 #include "stringutils.hpp"
 #include "drop.hpp"
@@ -9,7 +10,7 @@
 namespace Liquid {
 
     class Data;
-    
+
     extern const Data kNilData;
     extern const Data kTrueData;
     extern const Data kFalseData;
@@ -27,25 +28,25 @@ namespace Liquid {
             Nil,
             Drop,
         };
-        
+
         using Hash = StringKeyUnorderedMap<Data>;
         using Array = std::vector<Data>;
-        
+
         Data()
             : type_(Type::Nil)
         {
         }
-        
+
         Data(std::nullptr_t)
             : type_(Type::Nil)
         {
         }
-        
+
         Data(Type type)
             : type_(type)
         {
         }
-        
+
         Data(const Data& ctx)
             : type_(ctx.type_)
         {
@@ -74,7 +75,7 @@ namespace Liquid {
                     break;
             }
         }
-        
+
         Data& operator=(const Data& ctx) {
             if (this != &ctx) {
                 type_ = ctx.type_;
@@ -104,7 +105,7 @@ namespace Liquid {
             }
             return *this;
         }
-        
+
         bool operator==(const Data& other) const {
             if (type_ != other.type_) {
                 return false;
@@ -130,11 +131,11 @@ namespace Liquid {
                     return false;
             }
         }
-        
+
         bool operator!=(const Data& other) const {
             return !(*this == other);
         }
-        
+
         bool operator<(const Data& other) const {
             if (isNumberInt() && other.isNumberInt()) {
                 return toInt() < other.toInt();
@@ -178,17 +179,17 @@ namespace Liquid {
             , string_(string)
         {
         }
-        
+
         Data(const String::base& string)
             : Data(String{string})
         {
         }
-        
+
         Data(const char *string)
             : Data(String(string))
         {
         }
-        
+
         Data(int value)
             : type_(Type::NumberInt)
         {
@@ -205,7 +206,7 @@ namespace Liquid {
             : type_(value ? Type::BooleanTrue : Type::BooleanFalse)
         {
         }
-        
+
         Data(const std::shared_ptr<Drop>& drop)
             : type_(Type::Drop)
             , drop_(drop)
@@ -215,11 +216,11 @@ namespace Liquid {
         Type type() const {
             return type_;
         }
-        
+
         bool isHash() const {
             return type_ == Type::Hash;
         }
-        
+
         bool isArray() const {
             return type_ == Type::Array;
         }
@@ -243,15 +244,15 @@ namespace Liquid {
         bool isBoolean() const {
             return type_ == Type::BooleanTrue || type_ == Type::BooleanFalse;
         }
-        
+
         bool isNil() const {
             return type_ == Type::Nil;
         }
-        
+
         bool isDrop() const {
             return type_ == Type::Drop;
         }
-        
+
         String toString() const {
             switch (type_) {
                 case Type::BooleanTrue:
@@ -266,7 +267,7 @@ namespace Liquid {
                     return string_;
             }
         }
-        
+
         bool toBool() const {
             return type_ == Type::BooleanTrue ? true : false;
         }
@@ -288,11 +289,13 @@ namespace Liquid {
                     return number_.i;
                 case Type::NumberFloat:
                     return number_.f;
+                case Type::String:
+                    return std::stof(string_.toStdString());
                 default:
                     return 0;
             }
         }
-        
+
         bool isTruthy() const {
             switch (type_) {
                 case Type::Nil:
@@ -302,7 +305,7 @@ namespace Liquid {
                     return true;
             }
         }
-        
+
         void push_back(const Data& obj) {
             if (!isArray()) {
                 throw std::runtime_error("push_back() requires an array");
@@ -311,7 +314,7 @@ namespace Liquid {
                 array_.push_back(obj);
             }
         }
-        
+
         void pop_back() {
             if (!isArray()) {
                 throw std::runtime_error("pop_back() requires an array");
@@ -321,7 +324,7 @@ namespace Liquid {
             }
             array_.pop_back();
         }
-        
+
         size_t size() const {
             switch (type_) {
                 case Type::Hash:
@@ -334,7 +337,7 @@ namespace Liquid {
                     return 0;
             }
         }
-        
+
         const Data& at(size_t index) const {
             if (!isArray()) {
                 throw std::runtime_error("at() requires an array");
@@ -344,7 +347,7 @@ namespace Liquid {
             }
             return array_.at(index);
         }
-        
+
         const Array& array() const {
             if (!isArray()) {
                 throw std::runtime_error("array() requires an array");
@@ -358,7 +361,7 @@ namespace Liquid {
             }
             return array_;
         }
-        
+
         const Hash& hash() const {
             if (!isHash()) {
                 throw std::runtime_error("hash() requires an array");
@@ -383,7 +386,7 @@ namespace Liquid {
             }
             return result.first->second;
         }
-        
+
         const Data& operator[](const String& key) const {
             if (isHash()) {
                 const auto it = hash_.find(key);
@@ -397,21 +400,21 @@ namespace Liquid {
                 throw std::runtime_error("[] requires a hash or drop");
             }
         }
-        
+
         bool containsKey(const String& key) const {
             if (!isHash()) {
                 throw std::runtime_error("containsKey requires a hash");
             }
             return hash_.find(key) != hash_.end();
         }
-        
+
         std::shared_ptr<Drop> drop() const {
             if (!isDrop()) {
                 throw std::runtime_error("drop() requires a drop");
             }
             return drop_;
         }
-        
+
     private:
         Type type_;
         Hash hash_;

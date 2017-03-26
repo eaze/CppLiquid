@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 project(CppLiquid)
 
-option(CPPLIQUID_TESTS "Build tests" ON)
+option(CPPLIQUID_TESTS "Build tests" OFF)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -73,7 +73,7 @@ macro(add_exe STRING_TYPE)
     src/liquid/string_std.cpp
     src/liquid/string_qt.hpp
   )
-  add_library(${PROJECT_NAME}-${STRING_TYPE} ${SRCS})
+  add_library(${PROJECT_NAME}-${STRING_TYPE} SHARED ${SRCS})
 
   target_compile_definitions(${PROJECT_NAME}-${STRING_TYPE} PRIVATE
     LIQUID_STRING_USE_${STRING_TYPE}
@@ -117,7 +117,7 @@ macro(add_exe STRING_TYPE)
       -Werror
     )
   endif()
-  
+
   enable_testing()
   add_test(NAME ${PROJECT_NAME}-${STRING_TYPE} COMMAND ${PROJECT_NAME}-${STRING_TYPE}-Test)
 endmacro()
@@ -126,7 +126,7 @@ add_exe(STD)
 
 find_package(Qt5 COMPONENTS Core)
 if(Qt5_FOUND)
-  add_exe(QT)  
+  add_exe(QT)
   target_link_libraries(${PROJECT_NAME}-QT Qt5::Core)
   target_link_libraries(${PROJECT_NAME}-QT-Test Qt5::Core)
   if(MSVC)
