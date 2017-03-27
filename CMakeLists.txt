@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 2.8)
 project(CppLiquid)
 
 option(CPPLIQUID_TESTS "Build tests" OFF)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 macro(add_exe STRING_TYPE)
@@ -143,3 +143,17 @@ endif()
 
 source_group(liquid\\tags REGULAR_EXPRESSION src/liquid/tags/*)
 source_group(liquid REGULAR_EXPRESSION src/liquid/*)
+
+
+# Python
+
+add_definitions(-DLIQUID_STRING_USE_STD)
+find_package(PythonLibs REQUIRED)
+add_library(pyliquid SHARED src/python/render_template.cpp)
+set_target_properties(pyliquid PROPERTIES PREFIX "" SUFFIX ".so")
+if(APPLE)
+  set_target_properties(pyliquid PROPERTIES
+    LINK_FLAGS "-flat_namespace -undefined suppress")
+endif(APPLE)
+target_link_libraries(pyliquid ${PYTHON_LIBRARIES})
+target_link_libraries(pyliquid ${PROJECT_NAME}-STD)
