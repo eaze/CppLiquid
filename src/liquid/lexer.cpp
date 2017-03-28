@@ -4,7 +4,7 @@
 #include "error.hpp"
 
 namespace {
-    const std::unordered_map<char, Liquid::Token::Type> kSpecials{
+    const std::map<char, Liquid::Token::Type> kSpecials{
         {'|', Liquid::Token::Type::Pipe},
         {'.', Liquid::Token::Type::Dot},
         {':', Liquid::Token::Type::Colon},

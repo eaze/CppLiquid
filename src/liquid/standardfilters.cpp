@@ -3,6 +3,7 @@
 #include "stringutils.hpp"
 #include "template.hpp"
 #include "error.hpp"
+#include <cstring>
 #include <ctime>
 #include <time.h>
 

@@ -7,7 +7,8 @@
 
 #include <algorithm>
 #include <string>
-#include <unordered_map>
+#include <strings.h>
+#include <map>
 #include <vector>
 #include <iostream>
 
@@ -21,59 +22,67 @@ namespace Liquid {
 
         using value_type = base::value_type;
         using size_type = base::size_type;
-        
+
         static const size_type npos = static_cast<size_type >(-1);
-        
+
         String() {}
         String(const value_type* ptr) : s_(ptr) {}
         String(const base& str) : s_(str) {}
         String(value_type ch) : s_(1, ch) {}
-        
+
         size_type size() const {
             return s_.size();
         }
-        
+
         bool isEmpty() const {
             return s_.empty();
         }
-        
+
         value_type at(size_type pos) const {
             return s_.at(pos);
         }
-        
+
         String& operator=(const String& other) {
             if (&other != this) {
                 s_ = other.s_;
             }
             return *this;
         }
-        
+
         bool operator==(const String& other) const {
             return s_ == other.s_;
         }
-        
+
         bool operator!=(const String& other) const {
             return s_ != other.s_;
         }
-        
+
+        bool operator<(const String& other) const {
+            return s_ < other.s_;
+        }
+
+        bool operator>(const String& other) const {
+            return s_ > other.s_;
+        }
+
         String operator+(const String& other) const {
             return String(s_ + other.s_);
         }
-        
+
         String& operator+=(const String& other) {
             s_ += other.s_;
             return *this;
         }
-        
+
         String& operator+=(value_type ch) {
             s_ += ch;
             return *this;
         }
-        
+
         const base& raw() const {
             return s_;
         }
-        
+
         String arg(const String& arg) const {
             for (int i = 0; i <= 99; ++i) {
                 const auto marker = String("%" + std::to_string(i));
@@ -91,11 +100,11 @@ namespace Liquid {
         String arg(const T arg) const {
             return std::to_string(arg);
         }
-        
+
         std::string toStdString() const {
             return s_;
         }
-        
+
         String toLower() const {
             String s;
             const auto sz = size();
@@ -110,7 +119,7 @@ namespace Liquid {
             }
             return s;
         }
-        
+
         String toUpper() const {
             String s;
             const auto sz = size();
@@ -125,7 +134,7 @@ namespace Liquid {
             }
             return s;
         }
-        
+
         String mid(size_type pos, size_type num = -1) const {
             if (pos > size()) {
                 return {};
@@ -133,11 +142,11 @@ namespace Liquid {
             const size_type len = num == static_cast<size_type>(-1) || size() < num ? size() - pos : num;
             return String(s_.substr(pos, len));
         }
-        
+
         String left(size_type num) const {
             return s_.substr(0, num);
         }
-        
+
         String& replace(const String& before, const String& after) {
             size_type idx;
             size_type pos = 0;
@@ -147,20 +156,20 @@ namespace Liquid {
             }
             return *this;
         }
-        
+
         String& replace(size_type pos, size_type len, const String& after) {
             s_.replace(pos, len, after.s_);
             return *this;
         }
-        
+
         size_type indexOf(value_type ch, size_type from = 0) const {
             return s_.find(ch, from);
         }
-        
+
         size_type indexOf(const String& str, size_type from = 0) const {
             return s_.find(str.s_, from);
         }
-        
+
         std::vector<String> split(const String& delimiter) const {
             std::vector<String> result;
             if (delimiter.isEmpty()) {
@@ -178,7 +187,7 @@ namespace Liquid {
             }
             return result;
         }
-        
+
         int compare(const String& other, bool caseSensitive) const {
             if (!caseSensitive) {
 #ifdef _WIN32
@@ -189,7 +198,7 @@ namespace Liquid {
             }
             return s_.compare(other.s_);
         }
-        
+
         StringRef midRef(size_type pos, size_type num = -1) const;
 
     private:
@@ -201,9 +210,9 @@ namespace Liquid {
             return std::hash<std::string>{}(k.raw());
         }
     };
-    
+
     template <typename T>
-    using StringKeyUnorderedMap = std::unordered_map<String, T, StringHash>;
+    using StringKeyUnorderedMap = std::map<String, T>;
 
     inline std::ostream& operator << (std::ostream& os, const String& value) {
         os << value.toStdString();

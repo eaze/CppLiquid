@@ -8,7 +8,7 @@ namespace Liquid {
     
     using FilterHandler = std::function<Data(const Data& input, const std::vector<Data>&)>;
     
-    using FilterList = std::unordered_map<std::string, FilterHandler>;
+    using FilterList = std::map<std::string, FilterHandler>;
 
     class Filter {
     public:

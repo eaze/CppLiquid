@@ -14,7 +14,7 @@
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 namespace Liquid {
@@ -163,7 +163,7 @@ namespace Liquid {
     };
     
     template <typename T>
-    using StringKeyUnorderedMap = std::unordered_map<String, T, QStringHash>;
+    using StringKeyUnorderedMap = std::map<String, T, QStringHash>;
 
     inline std::ostream& operator << (std::ostream& os, const String& value) {
         os << value.toStdString();

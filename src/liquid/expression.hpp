@@ -208,7 +208,7 @@ namespace Liquid {
         Data var_;
         std::vector<Expression> lookups_;
         LookupKeyFilter filter_ = LookupKeyFilter::None;
-        mutable std::unordered_map<int, Data> filterResults_;
+        mutable std::map<int, Data> filterResults_;
     };
 
 }
