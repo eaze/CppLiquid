@@ -44,7 +44,7 @@ extern "C" PyObject* render_template(PyObject* module, PyObject* args) {
   char* templ_text;
   PyObject* dict;
   PyArg_ParseTuple(args, "sO!", &templ_text, &PyDict_Type, &dict);
-  if (PyErr_Occurred()) Py_RETURN_NONE;
+  if (PyErr_Occurred()) return nullptr;
 
   Liquid::Data::Hash params;
   PyObject* key;
@@ -54,7 +54,7 @@ extern "C" PyObject* render_template(PyObject* module, PyObject* args) {
     if (!PyString_Check(key)) {
       PyErr_Format(PyExc_TypeError,
           "Invalid template parameter key type: %s", key->ob_type->tp_name);
-      Py_RETURN_NONE;
+      return nullptr;
     }
     char* param_name = PyString_AsString(key);
     if (value == Py_None) {
@@ -78,7 +78,7 @@ extern "C" PyObject* render_template(PyObject* module, PyObject* args) {
     } else {
       PyErr_Format(PyExc_TypeError,
           "Invalid template parameter value type: %s", value->ob_type->tp_name);
-      Py_RETURN_NONE;
+      return nullptr;
     }
   }
   Liquid::Data context(params);
@@ -90,7 +90,7 @@ extern "C" PyObject* render_template(PyObject* module, PyObject* args) {
     return Py_BuildValue("s", output.c_str());
   } catch (const std::exception& e) {
       PyErr_Format(PyExc_Exception, "Unable to render template: %s", e.what());
-      Py_RETURN_NONE;
+      return nullptr;
   }
 }
 
